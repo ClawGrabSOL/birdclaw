@@ -1,17 +1,29 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "framework": null,
   "buildCommand": null,
+  "installCommand": "npm install",
   "outputDirectory": "public",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/((?!.*\\.[a-z0-9]+$).*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 10,
-      "memory": 256,
-      "includeFiles": "node_modules/sql.js/dist/sql-wasm.wasm"
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "node_modules/sql.js/dist/sql-wasm.wasm",
+        "maxDuration": 10
+      }
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
-  }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/assets/(.*)", "dest": "/public/assets/$1" },
+    { "src": "/styles.css", "dest": "/public/styles.css" },
+    { "src": "/app.js", "dest": "/public/app.js" },
+    { "src": "/(.*)", "dest": "/public/index.html" }
+  ]
 }
