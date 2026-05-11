@@ -1,0 +1,17 @@
+{
+  "name": "birdclaw",
+  "version": "0.1.0",
+  "description": "Local Twitter-style microblog. Your bird, your claws.",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "seed": "node scripts/seed.js"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "sql.js": "^1.13.0"
+  }
+}
