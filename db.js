@@ -15,6 +15,8 @@ let dirty = false;
 let saveTimer = null;
 
 function debouncedSave() {
+  // In serverless/read-only environments, do not persist to disk.
+  if (process.env.BIRDCLAW_SERVERLESS === '1') return;
   dirty = true;
   if (saveTimer) return;
   saveTimer = setTimeout(() => {
@@ -34,8 +36,11 @@ function debouncedSave() {
 async function open(filePath) {
   if (DB) return api();
   DB_PATH = filePath;
-  SQL = await initSqlJs();
-  if (fs.existsSync(filePath)) {
+  // Resolve the wasm path explicitly so Vercel's bundler keeps it.
+  const wasmPath = require.resolve('sql.js/dist/sql-wasm.wasm');
+  SQL = await initSqlJs({ locateFile: () => wasmPath });
+  // In-memory only under serverless; otherwise load from disk if present.
+  if (process.env.BIRDCLAW_SERVERLESS !== '1' && filePath && fs.existsSync(filePath)) {
     const data = fs.readFileSync(filePath);
     DB = new SQL.Database(new Uint8Array(data));
   } else {
@@ -122,7 +127,7 @@ function transaction(fn) {
       debouncedSave();
       return result;
     } catch (e) {
-      DB.exec('ROLLBACK');
+      try { DB.exec('ROLLBACK'); } catch {}
       throw e;
     }
   };

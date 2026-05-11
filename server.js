@@ -12,11 +12,16 @@ const PUBLIC_DIR = path.join(ROOT, 'public');
 
 let db;
 
-async function boot() {
+async function buildApp() {
   db = await open(DB_PATH);
   setupSchema();
   maybeSeed();
   setupRoutes();
+  return app;
+}
+
+async function boot() {
+  await buildApp();
   app.listen(PORT, () => {
     console.log(`\n  birdclaw ▸ http://localhost:${PORT}\n`);
   });
@@ -397,4 +402,8 @@ app.get('*', (req, res, next) => {
 });
 } // end setupRoutes
 
-boot().catch((e) => { console.error(e); process.exit(1); });
+module.exports = { buildApp };
+
+if (require.main === module) {
+  boot().catch((e) => { console.error(e); process.exit(1); });
+}
